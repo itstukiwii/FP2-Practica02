@@ -14,12 +14,12 @@ namespace FP2_Practica02
         {
             bool fin = false;
             Tablero tablero = new Tablero(10, 15, 15); // se crea un tablero de 10x10 con 15 minas
-            tablero.Render(false); // se renderiza el tablero sin mostrar las minas
+            tablero.Render(true); // se renderiza el tablero sin mostrar las minas
             while (!fin)
             {
                 char input = LeeInput(); // se lee el input del usuario
                 fin = ProcesaInput(tablero, input); // se procesa el input y se actualiza el tablero
-                tablero.Render(false); // se renderiza el tablero mostrando las minas si es necesario
+                tablero.Render(true); // se renderiza el tablero mostrando las minas si es necesario
             }
         }
 
@@ -48,7 +48,7 @@ namespace FP2_Practica02
                 case 'u': t.MueveCursor(new Coor (0, -1)); break; // arriba
                 case 'r': t.MueveCursor(new Coor (1, 0)); break; // derecha
                 case 'd': t.MueveCursor(new Coor (0, 1)); break; // abajo
-                //case 'c': t.DescubrirCasilla(); break;
+                case 'c': return t.ClickCasilla();
                 case 'x': t.MarcaMina(); break;
                 case 'q': return true;
             }

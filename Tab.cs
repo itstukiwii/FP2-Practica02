@@ -184,5 +184,92 @@ namespace Tab
                 nMarcadas--;
             }
         }
+        // click para descubrir una casilla
+        public bool ClickCasilla()
+        {
+            if (casilla[cursor.X, cursor.Y].estado == 'o') // solo si la casilla está sin descubrir
+            {
+                if (casilla[cursor.X, cursor.Y].mina)
+                {
+                    casilla[cursor.X, cursor.Y].estado = '*'; // la mina explotada
+                    ActivaDebug(); // se muestran también las otras minas
+                    return true;
+                }
+                else
+                {
+                    DescubreAdyacentes(); // se descubren casillas
+                }
+            }
+            return false;
+        }
+
+
+        //métodos auxiliares para el click 
+
+        // devuelve el número de minas alrededor de la posición (x,y)
+        private int MinasAlrededor(int x, int y)
+        {
+            int contador = 0;
+            for (int i = x - 1; i <= x + 1; i++)
+            {
+                for (int j = y - 1; j <= y + 1; j++)
+                {
+                    if (i >= 0 && i < fils && j >= 0 && j < cols) // se evita que se salga del tablero
+                    {
+                        if (casilla[i, j].mina) contador++; // la del medio se cuenta porque si hay mina no se habría llegado a esta función
+                    }
+                }
+            }
+            return contador;
+        }
+        // cuenta el número de bombas alrededor y se propaga
+        private void DescubreAdyacentes()
+        {
+            Coor[] pendientes = new Coor[fils*cols];
+            Coor[] visitadas = new Coor[fils*cols];
+            int numPendientes = 1, numVisitadas = 0;
+            pendientes[0] = new Coor(cursor.X, cursor.Y); // se añade la casilla actual a pendientes
+            while (numPendientes > 0)
+            {
+                // se toma la última casilla pendiente
+                Coor actual = pendientes[numPendientes-1];
+                numPendientes--;
+                // se marca como visitada
+                visitadas[numVisitadas] = actual;
+                numVisitadas++;
+                // se descubren las adyacentes
+                if (MinasAlrededor(actual.X, actual.Y) > 0)
+                {
+                    casilla[actual.X, actual.Y].estado = (char)(MinasAlrededor(actual.X, actual.Y)); // si hay minas alrededor, se muestra el número
+                }
+                else
+                {
+                    // si no hay minas alrededor, se marca como descubierta sin minas alrededor
+                    casilla[actual.X, actual.Y].estado = '·';
+                    // se añaden las adyacentes a pendientes
+                    for (int i = actual.X - 1; i <= actual.X + 1; i++)
+                    {
+                        for (int j = actual.Y - 1; j <= actual.Y + 1; j++)
+                        {
+                            if (i >= 0 && i < fils && j >= 0 && j < cols) // se evita que se salga del tablero
+                            {
+                                for (int k = 0; k < numVisitadas; k++) // se comprueba que no se haya visitado ya esa casilla
+                                {
+                                    // comprueba que la casilla no esté en la lista de visitadas
+                                    if (visitadas[k].X != i && visitadas[k].Y != j)
+                                    {
+                                        if (casilla[i, j].estado == 'o') // si la casilla está sin descubrir, se añade a pendientes
+                                        {
+                                            pendientes[numPendientes++] = new Coor(i, j); // se añade la casilla a pendientes y se incrementa el número de pendientes
+                                            numPendientes++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

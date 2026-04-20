@@ -10,12 +10,11 @@ namespace Coordinates{
             get => x;  
             set => x = value; 
         }
-      
         public int Y{   
             get => y;  
             set => y = value; 
         }
-        
+
         public override string ToString(){
             return $"({x},{y})";
         }
@@ -39,10 +38,5 @@ namespace Coordinates{
         public static bool operator!=(Coor c1, Coor c2){
             return !(c1==c2); //c1.x!=c2.x || c1.y!=c2.y;
         }
-
-
-
     }
-
-
 }
