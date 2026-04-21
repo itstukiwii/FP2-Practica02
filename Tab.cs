@@ -128,7 +128,7 @@ namespace Tab
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write("x ");
                     }
-                    else if (casilla[i, j].estado == 'c') // casilla descubierta sin minas alrededor
+                    else if (casilla[i, j].estado == '·') // casilla descubierta sin minas alrededor
                     {
                         Console.Write("  ");
                     }
@@ -240,7 +240,7 @@ namespace Tab
                 // se descubren las adyacentes
                 if (MinasAlrededor(actual.X, actual.Y) > 0)
                 {
-                    casilla[actual.X, actual.Y].estado = (char)(MinasAlrededor(actual.X, actual.Y)); // si hay minas alrededor, se muestra el número
+                    casilla[actual.X, actual.Y].estado = (char)(MinasAlrededor(actual.X, actual.Y) + '0'); // si hay minas alrededor, se muestra el número
                 }
                 else
                 {
