@@ -18,7 +18,6 @@ namespace Coordinates{
         public override string ToString(){
             return $"({x},{y})";
         }
-
         public static Coor Parse(string s){
             int ini,fin; // buscamos índices de "(" y de ")"
             (ini,fin) = (s.IndexOf("("),s.IndexOf(")"));
@@ -29,6 +28,5 @@ namespace Coordinates{
             // parseamos los dos enteros y construimos coordenada
             return new Coor(int.Parse(nums[0]), int.Parse(nums[1]));
         }
-
     }
 }

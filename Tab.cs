@@ -16,9 +16,9 @@ namespace Tab
         private int fils, cols;         // número de filas y columnas del tablero
         private Casilla[,] casilla;     // matriz de casillas del tablero
         private Coor cursor;            // posición del cursor (fila, columna)
-        private int nMinas, nMarcadas;  // número de minas y número de casillas marcadas con bandera
-        private bool primerClick;       // para garantizar que el primer click no sea una mina
-        private bool debug;            // para depuración, el renderizado muestra el tablero con las minas
+        private int nMinas, nMarcadas;          // número de minas y número de casillas marcadas con bandera
+        private bool primerClick = false;       // para garantizar que el primer click no sea una mina
+        private bool debug = false;             // para depuración, el renderizado muestra el tablero con las minas
         static Random rand = new Random(); // generador de aleatorios para colocar minas
 
 
@@ -87,6 +87,12 @@ namespace Tab
                 else i--; // si hay mina, vuelve a generar otra posición
             }
         }
+        // quita la mina y la pone en otra posición aleatoria, para garantizar que el primer click no sea una mina
+        private void QuitaMina()
+        {
+            casilla[cursor.X, cursor.Y].mina = false; // se quita la mina de la posición actual del cursor
+            PonMinas1(1); // se coloca una nueva mina en otra posición aleatoria
+        }
 
 
         // método para renderizar el tablero, mostrando las minas si bomba es true
@@ -100,17 +106,9 @@ namespace Tab
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    if (casilla[i, j].estado == '*') // casilla con mina descubierta (click del fallo)
+                    if (casilla[i, j].estado == 'o') // casilla sin descubrir
                     {
-                        Console.BackgroundColor = ConsoleColor.Red;
-                        Console.ForegroundColor = ConsoleColor.Black;
-                        Console.Write("*");
-                        Console.ResetColor();
-                        Console.Write(" "); // se añade un espacio para mantener el formato del tablero, ya que cada casilla ocupa dos caracteres
-                    }
-                    else if (casilla[i, j].estado == 'o') // casilla sin descubrir
-                    {
-                        if (bomba && casilla[i, j].mina) // si bomba es true y la casilla tiene mina, se pinta como casilla con mina sin descubrir
+                        if ((bomba || debug) && casilla[i, j].mina) // si bomba es true y la casilla tiene mina, se pinta como casilla con mina sin descubrir
                         {
                             Console.BackgroundColor = ConsoleColor.DarkYellow;
                             Console.ForegroundColor = ConsoleColor.White;
@@ -143,13 +141,40 @@ namespace Tab
                 Console.WriteLine(); // salto de línea al final de cada fila
             }
 
+            // luego se pinta el cursor
             Console.SetCursorPosition(cursor.Y * 2, cursor.X); // se posiciona el cursor en la posición actual del cursor
-            Console.BackgroundColor = ConsoleColor.White; // se pinta el cursor de blanco
-            Console.ForegroundColor = ConsoleColor.Black; // se pinta el contenido de negro
-            Console.Write(casilla[cursor.X, cursor.Y].estado); // se muestra el estado
+            if (bomba && casilla[cursor.X,cursor.Y].estado == '*')
+            {
+                Console.BackgroundColor = ConsoleColor.Red;
+                Console.ForegroundColor = ConsoleColor.Black;
+                Console.Write("*");
+                Console.ResetColor();
+                Console.Write(" "); // se añade un espacio para mantener el formato del tablero, ya que cada casilla ocupa dos caracteres
+            }
+            else
+            {
+                
+                Console.BackgroundColor = ConsoleColor.White; // se pinta el cursor de blanco
+                Console.ForegroundColor = ConsoleColor.Black; // se pinta el contenido de negro
+                Console.Write(casilla[cursor.X, cursor.Y].estado); // se muestra el estado
+            }
 
             Console.ResetColor(); // se resetean los colores para el siguiente renderizado
             Console.SetCursorPosition(0, fils + 1); // se posiciona el cursor al final del tablero para no sobreescribirlo
+        }
+        // método para renderizar una UI
+        public void RenderGUI()
+        {
+            Console.WriteLine("Minas marcadas: " + nMarcadas + "/" + nMinas);
+            if (nMarcadas > nMinas)
+            {
+                Console.WriteLine("Me da que algo no va bien (ÓwÒ)/");
+            }
+            else
+            {
+                Console.WriteLine("Ánimo, que tú puedesss!! (^w^)/");
+            }
+            Console.WriteLine(); // se deja un poco de espacio para que se vea bien
         }
         // cambia el debug para que se muestren las minas
         public void ActivaDebug()
@@ -192,9 +217,17 @@ namespace Tab
             {
                 if (casilla[cursor.X, cursor.Y].mina)
                 {
-                    casilla[cursor.X, cursor.Y].estado = '*'; // la mina explotada
-                    ActivaDebug(); // se muestran también las otras minas
-                    return true;
+                    if (!primerClick) // si es el primer click
+                    {
+                        QuitaMina();
+                        DescubreAdyacentes(); // se descubren casillas
+                        primerClick = true; // se marca que ya ha habido un primer click
+                    }
+                    else // si no es el primer click
+                    {
+                        casilla[cursor.X, cursor.Y].estado = '*'; // la mina explotada
+                        return true;
+                    }
                 }
                 else
                 {
@@ -254,9 +287,9 @@ namespace Tab
                                 // se comprueba que la coordenada no esté ni en pendientes ni visitadas
                                 if (!visitadas.Belongs(aux) && !pendientes.Belongs(aux)) 
                                 {
-                                    if (casilla[i, j].estado == 'o')
+                                    if (casilla[i, j].estado == 'o') // se mira que la casilla esté sin descubrir
                                     {
-                                        pendientes.Add(aux);
+                                        pendientes.Add(aux); // se añade la casilla a pendientes
                                     }
                                 }
                             }
@@ -264,6 +297,28 @@ namespace Tab
                     }
                 }
             }
+        }
+
+
+        // comprobación de que la partida ha acabado, ocurre si todas las casillas sin mina están destapadas
+        public bool Terminado()
+        {
+            bool terminado = true; // bandera
+            int i = 0; // variable auxiliar
+            while (terminado &&  i < fils)
+            {
+                int j = 0; // otra variable auxiliar
+                while (terminado &&  j < cols)
+                {
+                    if (!casilla[i, j].mina && casilla[i, j].estado == 'o') // si en la casilla no hay mina y está sin destapar
+                    {
+                        terminado = false;
+                    }
+                    j++;
+                }
+                i++;
+            }
+            return terminado;
         }
     }
 }
