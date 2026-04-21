@@ -50,5 +50,32 @@ class SetCoor
     {
         return SearchElem(c)!=-1;
     }
+    public Coor GetCoor(int i)
+    {
+        return coors[i];
+    }
+    public int NElem()
+    {
+        return oc;
+    }
+    private void Elim(int pos)
+    {
+        int i;
+        for (i = pos; i < oc - 1; i++)
+        {
+            coors[i] = coors[i + 1];
+        }
+        coors[i] = new Coor();
+        oc--;
+    }
+
+    public Coor PopElem()
+    {
+        Random rnd = new Random();
+        int i = rnd.Next(0, oc);
+        Coor aux = GetCoor(i);
+        Elim(i);
+        return aux;
+    }
 }
 
