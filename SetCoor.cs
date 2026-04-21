@@ -3,14 +3,6 @@
 namespace Hoja5;
 using Coordinates;
 
-
-internal class Program
-{
-    static void Main(string[] args)
-    {
-        Console.WriteLine("Hello, World!");
-    }
-}
 class SetCoor
 {
     Coor[] coors;
@@ -24,7 +16,7 @@ class SetCoor
     {
         bool enc = false;
         int n = 0;
-        while (n<coors.Length&&!enc)
+        while (n < oc && !enc)
         {
             if (coors[n] == c) enc = true;
             else n++;
@@ -42,7 +34,6 @@ class SetCoor
                 coors[oc] = c;
                 oc++;
             }
-        else Console.WriteLine("error, array lleno");
         }
         return !existe;
     }

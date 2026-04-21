@@ -1,5 +1,6 @@
 ﻿using System;
 using Coordinates;
+using Hoja5;
 
 namespace Tab
 {
@@ -225,44 +226,37 @@ namespace Tab
         // cuenta el número de bombas alrededor y se propaga
         private void DescubreAdyacentes()
         {
-            Coor[] pendientes = new Coor[fils*cols];
-            Coor[] visitadas = new Coor[fils*cols];
-            int numPendientes = 1, numVisitadas = 0;
-            pendientes[0] = new Coor(cursor.X, cursor.Y); // se añade la casilla actual a pendientes
-            while (numPendientes > 0)
+            SetCoor pendientes = new SetCoor(fils * cols); // se crea un conjunto de coordenadas pendientes de descubrir
+            SetCoor visitadas = new SetCoor(fils * cols); // se crea un array con las ya visitadas
+            pendientes.Add(cursor); // se guarda en pendientes la posición actual
+
+            while (pendientes.NElem() > 0)
             {
-                // se toma la última casilla pendiente
-                Coor actual = pendientes[numPendientes-1];
-                numPendientes--;
-                // se marca como visitada
-                visitadas[numVisitadas] = actual;
-                numVisitadas++;
-                // se descubren las adyacentes
-                if (MinasAlrededor(actual.X, actual.Y) > 0)
+                Coor actual = pendientes.PopElem(); // se pilla una coordenada y se elimina del conjunto
+                visitadas.Add(actual); // se añade en la que estamos a las ya visitadas
+                int minas = MinasAlrededor(actual.X, actual.Y); // para simplificar
+
+                if (minas > 0) 
                 {
-                    casilla[actual.X, actual.Y].estado = (char)(MinasAlrededor(actual.X, actual.Y) + '0'); // si hay minas alrededor, se muestra el número
+                    casilla[actual.X, actual.Y].estado = (char)(minas + '0'); // se pone el número 
                 }
                 else
                 {
-                    // si no hay minas alrededor, se marca como descubierta sin minas alrededor
-                    casilla[actual.X, actual.Y].estado = '·';
-                    // se añaden las adyacentes a pendientes
-                    for (int i = actual.X - 1; i <= actual.X + 1; i++)
+                    casilla[actual.X, actual.Y].estado = '·'; // se marca como que no hay minas alrededor
+
+                    for (int i = actual.X -1; i <= actual.X + 1; i++)
                     {
-                        for (int j = actual.Y - 1; j <= actual.Y + 1; j++)
+                        for (int j = actual.Y -1; j <= actual.Y + 1; j++)
                         {
-                            if (i >= 0 && i < fils && j >= 0 && j < cols) // se evita que se salga del tablero
+                            if ( i >= 0 && i < fils && j >= 0 && j < cols) // se comprueba que no se salga del tablero
                             {
-                                for (int k = 0; k < numVisitadas; k++) // se comprueba que no se haya visitado ya esa casilla
+                                Coor aux = new Coor(i, j); // coordenada auxiliar
+                                // se comprueba que la coordenada no esté ni en pendientes ni visitadas
+                                if (!visitadas.Belongs(aux) && !pendientes.Belongs(aux)) 
                                 {
-                                    // comprueba que la casilla no esté en la lista de visitadas
-                                    if (visitadas[k].X != i && visitadas[k].Y != j)
+                                    if (casilla[i, j].estado == 'o')
                                     {
-                                        if (casilla[i, j].estado == 'o') // si la casilla está sin descubrir, se añade a pendientes
-                                        {
-                                            pendientes[numPendientes++] = new Coor(i, j); // se añade la casilla a pendientes y se incrementa el número de pendientes
-                                            numPendientes++;
-                                        }
+                                        pendientes.Add(aux);
                                     }
                                 }
                             }
